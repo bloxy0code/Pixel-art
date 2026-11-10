@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#090d18">
+<title>PIXELVERSE — Desk Console</title>
+<style>
+:root{--bg:#090d18;--panel:#101a2a;--line:#24344d;--cyan:#62e6df;--pink:#ff75b8;--yellow:#ffe18a;--green:#9cff9c;--muted:#8da1b9;--white:#e8f3ff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white);font-family:ui-monospace,Consolas,monospace}
+body{padding:14px;background-image:linear-gradient(rgba(98,230,223,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(98,230,223,.025) 1px,transparent 1px);background-size:18px 18px}
+button,input{font:inherit}button{background:#17263a;color:var(--white);border:1px solid #38506d;padding:10px 12px;border-radius:8px;cursor:pointer}button:active{transform:translateY(1px);background:#243b55}
+.app{max-width:1000px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:2px 0 14px}.brand{font-weight:900;letter-spacing:3px;color:var(--cyan);font-size:clamp(19px,4vw,27px);text-shadow:0 0 14px #62e6df55}.sub{color:var(--muted);font-size:10px;letter-spacing:2px;margin-top:4px}.status{font-size:10px;color:var(--green);border:1px solid #345b50;padding:7px 9px;border-radius:20px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1.45fr 1fr;gap:12px}.panel{background:linear-gradient(145deg,#111d30,#0c1422);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 8px 30px #0003;min-width:0}.panel h2{font-size:11px;letter-spacing:2px;color:var(--cyan);font-weight:700;margin:0 0 12px}.scene-wrap{position:relative;overflow:hidden;border:1px solid #2d4660;border-radius:8px;background:#080e1a}.scene{display:block;width:100%;height:auto;image-rendering:pixelated;aspect-ratio:16/9}.scene-label{position:absolute;left:10px;top:9px;font-size:9px;color:#c6e5ed;background:#07101acc;padding:5px 7px;border:1px solid #38506d;border-radius:4px;letter-spacing:1px}
+.clock{font-size:clamp(42px,9vw,76px);font-weight:900;letter-spacing:-4px;color:var(--white);text-shadow:0 0 22px #62e6df33;line-height:1.05}.date{color:var(--muted);font-size:12px;margin-top:8px}.clockrow{display:flex;justify-content:space-between;align-items:end;gap:8px}.weather{color:var(--yellow);font-size:12px;text-align:right;line-height:1.6}
+.controls{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.controls button{font-size:10px;padding:8px 10px}.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px #62e6df22}
+.rightcol{display:grid;gap:12px;align-content:start}.timer{font-size:43px;font-weight:900;text-align:center;letter-spacing:2px;color:var(--yellow);margin:4px 0}.timer-label{text-align:center;color:var(--muted);font-size:10px;letter-spacing:2px}.timer-actions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:10px}.timer-actions button{font-size:10px}.progress{height:5px;background:#26364b;border-radius:9px;margin-top:12px;overflow:hidden}.bar{height:100%;width:0;background:var(--cyan);transition:width .3s}
+.weatherline{display:flex;justify-content:space-between;gap:10px;align-items:center}.weather-big{font-size:27px;color:var(--yellow);font-weight:bold}.small{font-size:10px;color:var(--muted);line-height:1.7}.field{display:flex;gap:6px;margin-top:9px}.field input{min-width:0;width:100%;background:#091321;color:var(--white);border:1px solid #344861;border-radius:7px;padding:9px;font-size:11px}.field button{font-size:10px;padding:8px}
+.matrix{display:none;position:fixed;inset:0;background:#020806;z-index:5}.matrix canvas{width:100%;height:100%}.matrix .exit{position:absolute;top:15px;right:15px;z-index:6;background:#07150d;border-color:#1f6b3a;color:#9cff9c}
+.bottom{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.quote{font-size:12px;color:#d8e7f4;line-height:1.7;min-height:42px}.pixel{color:var(--pink)}.footer{text-align:center;color:#53667f;font-size:9px;letter-spacing:1px;padding:17px 0 5px}
+@media(max-width:650px){body{padding:10px}.grid{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}.top{align-items:flex-start}.status{font-size:9px}.panel{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top"><div><div class="brand">PIXELVERSE<span class="pixel">_</span></div><div class="sub">A LITTLE WORLD ON YOUR DESK // v1.0</div></div><div class="status">● SYSTEM ONLINE</div></header>
+ <main class="grid">
+  <section class="panel">
+   <h2>01 / LIVING PIXEL WINDOW</h2>
+   <div class="scene-wrap"><canvas id="world" class="scene" width="480" height="270"></canvas><div class="scene-label" id="sceneMode">PIXEL AQUARIUM // LIVE</div></div>
+   <div class="controls">
+    <button class="active" data-mode="aquarium">🐟 AQUARIUM</button><button data-mode="landscape">🌄 PIXEL WORLD</button><button data-mode="rain">🌧 RAIN</button><button id="matrixBtn">▦ MATRIX MODE</button>
+   </div>
+  </section>
+  <div class="rightcol">
+   <section class="panel">
+    <h2>02 / LOCAL TIME</h2>
+    <div class="clockrow"><div><div class="clock" id="clock">00:00</div><div class="date" id="date">Loading date...</div></div><div class="weather" id="miniWeather">WEATHER<br>--°C</div></div>
+   </section>
+   <section class="panel">
+    <h2>03 / FOCUS ENGINE</h2>
+    <div class="timer-label" id="timerLabel">FOCUS SESSION</div><div class="timer" id="timer">25:00</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="timer-actions"><button id="start">▶ START</button><button id="pause">Ⅱ PAUSE</button><button id="reset">↺ RESET</button></div>
+    <div class="controls" style="justify-content:center"><button class="active" data-min="25" data-name="FOCUS">25 MIN</button><button data-min="5" data-name="BREAK">5 MIN BREAK</button><button data-min="15" data-name="LONG BREAK">15 MIN BREAK</button></div>
+   </section>
+  </div>
+ </main>
+ <div class="bottom">
+  <section class="panel"><h2>04 / WEATHER LINK</h2><div class="weatherline"><div><div class="weather-big" id="temp">--°C</div><div class="small" id="weatherDesc">Enter a city to load weather</div></div><div class="small" id="weatherExtra">HUMIDITY: --<br>WIND: --</div></div><div class="field"><input id="city" value="Lucknow" placeholder="Enter city name"><button id="weatherBtn">UPDATE</button></div><div class="small" id="weatherStatus">Weather needs an internet connection.</div></section>
+  <section class="panel"><h2>05 / DAILY TRANSMISSION</h2><div class="quote" id="quote">Your future is built by the tiny things you do today.</div><div class="controls"><button id="newQuote">↻ NEW MESSAGE</button><button id="fullscreen">⛶ FULLSCREEN</button></div><div class="small" style="margin-top:9px">TIP: Keep the phone plugged in, use low brightness and place it on a stand.</div></section>
+ </div>
+ <div class="footer">PIXELVERSE // BUILT FOR YOUR OLD PHONE // NO CAMERA • NO SPEAKER REQUIRED</div>
+</div>
+<div class="matrix" id="matrix"><canvas id="matrixCanvas"></canvas><button class="exit" id="exitMatrix">✕ EXIT MATRIX</button></div>
+<script>
+const $=id=>document.getElementById(id);
+const clock=()=>{const d=new Date();$('clock').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:false});$('date').textContent=d.toLocaleDateString([], {weekday:'long',day:'numeric',month:'long',year:'numeric'});};
+clock();setInterval(clock,1000);
+
+// Pixel-art scene: drawn at a deliberately low resolution for a crisp retro look.
+const c=$('world'),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
+let mode='aquarium',tick=0,fish=Array.from({length:7},(_,i)=>({x:(i*71+30)%500,y:75+(i*29)%135,s:.45+(i%4)*.18,dir:i%2?1:-1,color:['#ffbd75','#ff79ae','#8de5d7','#b9a0ff'][i%4]}));
+function rect(x,y,w,h,col){ctx.fillStyle=col;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function drawWorld(){
+ tick++;ctx.clearRect(0,0,480,270);
+ const hour=new Date().getHours(),night=hour<6||hour>18;
+ const sky=mode==='aquarium'?'#071c35':(night?'#101b3c':'#77b9d0');
+ rect(0,0,480,270,sky);
+ if(mode==='aquarium'){
+  for(let i=0;i<35;i++){let x=(i*83)%480,y=(i*47+tick*.25)%250;rect(x,y,2,2,'#8adbd966')}
+  rect(0,222,480,48,'#123d50');for(let i=0;i<20;i++){let x=(i*29)%480;rect(x,215-(i%3)*3,3,14,'#2b9b78')}
+  for(let i=0;i<fish.length;i++){let f=fish[i];f.x+=f.s*f.dir;if(f.x>500)f.x=-20;if(f.x< -20)f.x=500;let x=f.x,y=f.y+Math.sin(tick*.045+i)*5;ctx.save();ctx.translate(x,y);if(f.dir<0)ctx.scale(-1,1);rect(-8,0,17,8,f.color);rect(7,1,7,6,f.color);rect(-4,-2,4,3,'#fff1c8');rect(2,2,2,2,'#102033');ctx.restore();}
+  rect(42,190,5,31,'#48ad85');rect(35,178,7,16,'#48ad85');rect(48,174,7,19,'#48ad85');
+ }else{
+  // mountains, stars and pixel sun/moon
+  for(let i=0;i<35;i++){let x=(i*67)%480,y=(i*31)%125;rect(x,y,2,2,night?'#d7e5ff':'#fff3b0')}
+  rect(night?370:75,night?42:48,night?23:28,night?23:28,night?'#e3e8ff':'#ffe18a');
+  rect(0,165,130,70,'#315b78');rect(70,135,140,100,'#244b69');rect(190,158,120,77,'#315b78');rect(300,125,180,110,'#244b69');
+  rect(0,210,480,60,'#183b43');rect(0,236,480,34,'#245347');
+  for(let i=0;i<16;i++){let x=i*33;rect(x,218-(i%4)*8,7,7,'#5b9b65');rect(x+2,210-(i%4)*8,3,12,'#3b7656')}
+  if(mode==='rain'){for(let i=0;i<80;i++){let x=(i*61+tick*2)%480,y=(i*37+tick*5)%270;rect(x,y,1,6,'#b9eaff')}}
+  // tiny cabin
+  rect(335,187,60,48,'#9b6653');rect(326,180,78,12,'#e39b70');rect(350,203,13,19,'#ffe18a');rect(375,203,12,12,'#b8d9e8');
+ }
+ // horizon and subtle scanline accents
+ rect(0,265,480,5,'#62e6df');
+}
+function loop(){drawWorld();requestAnimationFrame(loop)}loop();
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('sceneMode').textContent=({aquarium:'PIXEL AQUARIUM // LIVE',landscape:'PIXEL WORLD // LIVE',rain:'RAINY WINDOW // LIVE'})[mode]}));
+
+// Pomodoro timer
+let total=1500,left=1500,interval=null;
+function showTimer(){$('timer').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');$('bar').style.width=((total-left)/total*100)+'%'}
+function stopTimer(){if(interval){clearInterval(interval);interval=null}}
+$('start').onclick=()=>{if(interval)return;interval=setInterval(()=>{left--;showTimer();if(left<=0){stopTimer();$('timerLabel').textContent='SESSION COMPLETE — NICE WORK!';if(navigator.vibrate)navigator.vibrate([150,80,150]);}},1000)};
+$('pause').onclick=stopTimer;
+$('reset').onclick=()=>{stopTimer();left=total;showTimer()};
+document.querySelectorAll('[data-min]').forEach(b=>b.onclick=()=>{stopTimer();total=Number(b.dataset.min)*60;left=total;$('timerLabel').textContent=b.dataset.name+' SESSION';document.querySelectorAll('[data-min]').forEach(x=>x.classList.toggle('active',x===b));showTimer()});
+showTimer();
+
+// Weather via free Open-Meteo API (no API key)
+const weatherCodes={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Snow',80:'Rain showers',95:'Thunderstorm'};
+async function loadWeather(){
+ const city=$('city').value.trim();if(!city)return;
+ $('weatherStatus').textContent='Connecting to weather satellite...';
+ try{
+  const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language=en&format=json');
+  if(!g.ok)throw Error('Network error');const gd=await g.json();if(!gd.results?.length)throw Error('City not found. Try another spelling.');
+  const place=gd.results[0],r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
+  const data=await r.json(),w=data.current,desc=weatherCodes[w.weather_code]||'Current conditions';
+  $('temp').textContent=Math.round(w.temperature_2m)+'°C';$('weatherDesc').textContent=place.name+', '+(place.country||'')+' · '+desc;
+  $('weatherExtra').innerHTML='FEELS: '+Math.round(w.apparent_temperature)+'°C<br>HUMIDITY: '+w.relative_humidity_2m+'%<br>WIND: '+Math.round(w.wind_speed_10m)+' km/h';
+  $('miniWeather').innerHTML=desc.toUpperCase()+'<br>'+Math.round(w.temperature_2m)+'°C';
+  $('weatherStatus').textContent='Updated just now · Open-Meteo';
+ }catch(e){$('weatherStatus').textContent='Weather unavailable: '+e.message;$('weatherDesc').textContent='Check internet and city name.'}
+}
+$('weatherBtn').onclick=loadWeather;$('city').addEventListener('keydown',e=>{if(e.key==='Enter')loadWeather()});loadWeather();
+
+// Matrix fullscreen mode
+const matrix=$('matrix'),mc=$('matrixCanvas'),mctx=mc.getContext('2d');let drops=[],matrixFrame;
+function matrixDraw(){mc.width=innerWidth;mc.height=innerHeight;let cols=Math.floor(mc.width/16);drops=Array(cols).fill(1);function draw(){mctx.fillStyle='rgba(0,8,3,.12)';mctx.fillRect(0,0,mc.width,mc.height);mctx.fillStyle='#53ff83';mctx.font='15px monospace';for(let i=0;i<drops.length;i++){let t=String.fromCharCode(0x30A0+Math.random()*96);mctx.fillText(t,i*16,drops[i]*16);if(drops[i]*16>mc.height&&Math.random()>.975)drops[i]=0;drops[i]++}matrixFrame=requestAnimationFrame(draw)}draw()}
+$('matrixBtn').onclick=()=>{matrix.style.display='block';matrixDraw()};$('exitMatrix').onclick=()=>{matrix.style.display='none';cancelAnimationFrame(matrixFrame)};
+
+// Tiny rotating transmissions
+const quotes=['Make it work. Make it right. Make it beautiful.','Small progress is still progress.','Your future is built by the tiny things you do today.','Stay curious. Keep experimenting.','One focused hour can change your day.','Build something that makes you proud.','Dream in pixels. Think in systems.'];
+$('newQuote').onclick=()=>{$('quote').textContent=quotes[Math.floor(Math.random()*quotes.length)]};
+$('fullscreen').onclick=()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen?.()}else{document.exitFullscreen?.()}};
+</script>
+</body>
+</html>
